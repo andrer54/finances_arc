@@ -86,6 +86,14 @@ table td{
     font-weight: normal;
     
 }
+td.income{
+    color: green;
+}
+td.expense{
+    color: red;
+}
+
+
 table tbody tr{
     opacity:0.7;
 }
@@ -99,4 +107,6 @@ table tbody tr td:first-child{
 /* footer =================*/
 footer {
     text-align: center;
+    padding: 4rem 0 2rem;
+    color: var(--dark-blue);
 }
