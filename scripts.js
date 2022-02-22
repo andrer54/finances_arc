@@ -16,7 +16,6 @@ const Modal = {
     }
 }
 
-
 const transactions = [
     {
         id: 1,
@@ -43,6 +42,14 @@ const Transaction = {
     all: transactions,
     add(transaction){
         Transaction.all.push(transaction)
+
+        App.reload();
+    },
+
+    remove(index){
+        Transaction.all.splice(index, 1)
+
+        App.reload()
     },
 
     incomes(){
@@ -68,7 +75,6 @@ const Transaction = {
     }
 }
 
-// Agora preciso substituir os dados do html pelos dados do js
 const DOM = {
     transactionsContainer: document.querySelector('#data-table tbody'),
     
@@ -106,11 +112,27 @@ const DOM = {
 
         document.getElementById('totalDisplay')
         .innerHTML = Utils.formatCurrency(Transaction.total());
+    },
+
+    clearTransactions(){
+        DOM.transactionsContainer.innerHTML = "";
     }
 }
 
 
 const Utils = {
+    formatAmount(value){
+        value = Number(value) * 100;
+        return(value);
+    }, 
+    
+    formatDate(date){
+        const splittedDate = date.split("-")
+        return `${splittedDate[2]}/${splittedDate[1]}/${splittedDate[0]}`
+
+        
+    },
+
     formatCurrency(value){
         const signal = Number(value) < 0 ? "-" : "";
 
@@ -124,9 +146,94 @@ const Utils = {
     }
 }
 
+const Form = {
+    description: document.querySelector('input#description'),
+    amount: document.querySelector('input#amount'),
+    date: document.querySelector('input#date'),
 
-transactions.forEach(function(transaction){
-    DOM.addTransaction(transaction)
+    getValues(){
+        return {
+            description: Form.description.value,
+            amount: Form.amount.value,
+            date: Form.date.value,
+        }
+    },
+
+    validateFields(){
+        const { description, amount, date } = Form.getValues();
+
+        if (description.trim() === "" ||
+            amount.trim() === "" ||
+            date.trim() === "" ){
+
+                throw new Error("por favor preencha todos os campos");
+
+        }
+    },
+
+    validateValues(){
+        let { description, amount, date } = Form.getValues();
+        amount = Utils.formatAmount(amount);
+        date = Utils.formatDate(date);
+
+        return {
+            description,
+            amount,
+            date
+        }
+        
+        console.log(date)
+    },
+    
+    saveTransaction(transaction){
+        Transaction.add(transaction);
+    },
+
+    clearFields(){
+        Form.description.value = "";
+        Form.amount.value = "";
+        Form.date.value = "";
+    },
+
+    submit(event) {
+         event.preventDefault()
+
+         try {
+            Form.validateFields()
+            const transaction = Form.validateValues()
+            
+            Form.saveTransaction(transaction)            //salvar
+            Form.clearFields()  //apagar dados do form
+            Modal.close();//modal fechar
+            
+         }catch (error){
+            alert(error.message)
+         }
+
+     }
+}
+
+
+const App = {
+    init(){
+
+        Transaction.all.forEach(function(transaction){
+            DOM.addTransaction(transaction)
+        })
+        
+        DOM.updateBalance();
+    },
+    reload () {
+        DOM.clearTransactions();
+        App.init();
+    },
+}
+
+App.init();
+
+Transaction.add({
+    id: 49,
+    description: "transação adicionada",
+    amount: -350,
+    date: '23/02/2022'
 })
-
-DOM.updateBalance();
